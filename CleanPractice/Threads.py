@@ -30,6 +30,7 @@ class UserThread(threading.Thread):
         self.root.mainloop()
     
     def on_closing(self):
+        print("closing")
         self.key = "Q"
         self.root.destroy()
     
