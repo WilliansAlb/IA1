@@ -34,3 +34,25 @@ The vacuum cleaner choose randomly between *clean*, *move* or *doing nothing*.
 
 #### Intelligence
 The vacuum cleaner checks if the square it is located in is not already clean for *clean* it, then *move* it to the another square.
+
+## PRÁCTICA 2 - VendingPractice
+### Tools
+* Python 3.2.1
+* Python Libraries: 
+	- tkinter
+	- threading
+	- time
+	- sys
+
+### Problem
+Modelar una máquina expendedora de refrescos como un agente reactivo simple. Este agente solo tiene un sensor que percibe cuando se ingresa una moneda o cuando se selecciona alguno de los 3 refrescos disponibles.
+
+### How to run
+1. Open a console on directory _VendingPractice_ that contains *main.py*
+2. Run the command
+
+```
+python main.py
+```
+
+3. Click over the space for insert coin or an option of soda. Additional, is added a click area for get the sodas.

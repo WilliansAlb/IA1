@@ -4,7 +4,7 @@ from Vacuum import Vacuum
 import sys
 
 def main():
-    isStupid = True if sys.argv[1] == 1 else False
+    isStupid = True if sys.argv[1] == '1' else False
     squareA = Square('A')
     squareB = Square('B')
     user_thread = UserThread(squareA, squareB)
