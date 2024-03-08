@@ -4,13 +4,10 @@ from VendingMachine import VendingMachine
 def insert_coin():
     global canvas, coin, status, vending
     vending.perception = "COIN"
-    canvas.itemconfigure(status,text="INSERTED COIN")
-    canvas.itemconfigure(coin, state="normal")
 
 def select(drink):
     global status, canvas, vending
     vending.perception = drink
-    canvas.itemconfigure(status,text='SELECT '+drink)
 
 def main():
     global vending_machine, coin, pippu, canvas, porp, cabro, status, vending
@@ -55,7 +52,7 @@ def main():
     pippu_area = canvas.create_rectangle(252/factor, 516/factor, 419/factor, 591/factor, outline="")
     porp_area = canvas.create_rectangle(54/factor, 516/factor, 219/factor, 591/factor, outline="")
     cabro_area = canvas.create_rectangle(447/factor, 516/factor, 615/factor, 591/factor, outline="")
-    status = canvas.create_text(90/factor, 648/factor, anchor=tk.W, text="SERVING PIPPU", fill="white", font=("Arial", 8), width=100)
+    status = canvas.create_text(90/factor, 648/factor, anchor=tk.W, text="INSERTE MONEDA", fill="white", font=("Arial", 8), width=100)
     canvas.tag_bind(coin_area, "<Button-1>", lambda event: insert_coin())
     canvas.tag_bind(pippu_area, "<Button-1>", lambda event: select('PIPPU'))
     canvas.tag_bind(porp_area, "<Button-1>", lambda event: select('PORP'))
