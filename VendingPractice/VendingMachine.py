@@ -6,13 +6,6 @@ class VendingMachine(threading.Thread):
         threading.Thread.__init__(self)
         self.perception = ""
         self.state = initial
-        self.stop_event = threading.Event()
-        self.canvas = canvas 
-        self.coin = coin
-        self.pippu = pippu
-        self.porp = porp
-        self.cabro = cabro
-        self.status = status
         self.model_states = {
             "NO-COIN":  { "COIN": "COIN", "PORP": "RESET", "PIPPU": "RESET", "CABRO": "RESET" },
             "COIN":  { "COIN": "COIN", "PORP": "SERVING-PORP", "PIPPU": "SERVING-PIPPU", "CABRO": "SERVING-CABRO" },
@@ -27,12 +20,22 @@ class VendingMachine(threading.Thread):
             "SERVING-PIPPU":  "SERVING-PIPPU",
             "SERVING-CABRO":  "SERVING-CABRO"
         }
+        '''All code over is for the model, the code above es for visual components'''
+        self.stop_event = threading.Event()
+        self.canvas = canvas 
+        self.coin = coin
+        self.pippu = pippu
+        self.porp = porp
+        self.cabro = cabro
+        self.status = status
     def stop(self):
              self.stop_event.set()
     def run(self):
         while not self.stop_event.is_set():
             self.updateStatus()
             self.doAction()
+            '''The next call is for update Visual Graphics'''
+            self.updateVisualGraphics()
             time.sleep(1)
     def updateStatus(self):
             if self.perception != "":
@@ -41,6 +44,24 @@ class VendingMachine(threading.Thread):
                 self.state = "NO-COIN"
     def doAction(self):
         newAction = self.model_actions[self.state];
+        if newAction == "SHOW-COIN":
+            print("INSERTE MONEDA")
+        elif newAction == "SHOW-CODE":
+            print("ELIGE UNA BEBIDA")
+        elif newAction == "SERVING-PORP":
+            print("SIRVIENDO UNA PORP")
+        elif newAction == "SERVING-PIPPU":
+            print("SIRVIENDO UNA PIPPU")
+        elif newAction == "SERVING-CABRO":
+            print("SIRVIENDO UNA CABRO")
+    '''All code over is for the model, the code above es for visual components'''
+    def reset(self):
+        self.canvas.itemconfigure(self.porp, state="hidden")
+        self.canvas.itemconfigure(self.pippu, state="hidden")
+        self.canvas.itemconfigure(self.cabro, state="hidden")
+        self.canvas.itemconfigure(self.coin, state="hidden")
+    def updateVisualGraphics(self):
+        newAction = self.model_actions[self.state]
         if newAction == "SHOW-COIN":
             self.canvas.itemconfigure(self.status,text="INSERTE MONEDA")
             self.reset()
@@ -62,8 +83,3 @@ class VendingMachine(threading.Thread):
             self.canvas.itemconfigure(self.status,text="SIRVIENDO CABRO")
             self.canvas.itemconfigure(self.cabro, state="normal")
             self.canvas.itemconfigure(self.coin, state="hidden")
-    def reset(self):
-        self.canvas.itemconfigure(self.porp, state="hidden")
-        self.canvas.itemconfigure(self.pippu, state="hidden")
-        self.canvas.itemconfigure(self.cabro, state="hidden")
-        self.canvas.itemconfigure(self.coin, state="hidden")
