@@ -3,7 +3,8 @@ from VendingMachine import VendingMachine
 
 def insert_coin():
     global canvas, coin, status, vending
-    vending.perception = "COIN"
+    vending.perception = "GET-COIN"
+    canvas.itemconfigure(coin, state="normal")
 
 def select(drink):
     global status, canvas, vending
