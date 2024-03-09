@@ -1,0 +1,49 @@
+estados: "esperar-izquierda", "esperar-derecha", "sucio-izquierda", "sucio-derecha"
+
+percepcion: "limpio", "sucio", "izquierda", "derecha"
+
+reglas:
+[
+	{"esperar-izquierda": "no-hacer-nada-izquierda"}
+	{"esperar-derecha": "no-hacer-nada-derecha"}
+	{"sucio-derecha": "limpiar-derecha"}
+	{"sucio-izquierda": "limpiar-izquierda"}
+]
+
+acciones:
+[
+	{"no-hacer-nada-izquierda": "nada"}
+	{"no-hacer-nada-derecha": "nada"}
+	{"sucio-derecha": "limpiar-derecha"}
+	{"sucio-izquierda": "limpiar-izquierda"}
+]
+
+estado = "esperar-izquierda"
+accion = "no-hacer-nada-izquierda"
+
+
+agente:
+mientras
+	Escribir "ingresar percepción"
+	leer(percepcion)
+	estado = actualizar-estado(estado, acción, percepción)
+	regla = reglas[estado]
+	accion = acciones[regla]
+	Escribir acción
+finmientras
+
+Modelo: 
+[
+	{"esperar-izquierda", "no-hacer-nada-izquierda", "limpio":"esperar-derecha"},
+	{"esperar-izquierda", "no-hacer-nada-izquierda", "sucio":"sucio-izquierda"},
+	{"esperar-derecha", "no-hacer-nada-derecha", "limpio":"esperar-izquierda"},
+	{"esperar-derecha", "no-hacer-nada-derecha", "sucio":"sucio-derecha"},
+	{"sucio-izquierda", "limpiar-izquierda", "limpio":"esperar-derecha"},
+	{"sucio-derecha", "limpiar-derecha", "limpio":"esperar-izquierda"},
+]
+
+actualizar-estado(estado, acción, percepción)
+	si (existeEnModelo(estado, acción percepcción)) entonces
+		retornar Modelo[estado, acción, percepción]
+	sino
+		retornar "sin-moneda"
