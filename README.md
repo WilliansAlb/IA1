@@ -71,3 +71,13 @@ python main.py
 ```
 
 3. Click over the space for insert coin or an option of soda. Additional, is added a click area for get the sodas.
+
+## PRÁCTICA 3 - EightQueensPractice
+### Tools
+* Python 3.2.1
+* Python Libraries: 
+	- random
+	- colorama
+
+### Problem
+Modelar un algoritmo génetico que resuelva el problema de las 8 reinas, consistiendo este de colocar 8 reinas en el tablero de ajedrez, sin que ninguna de ellas choquen entre sí.
