@@ -1,5 +1,6 @@
 import random
 from colorama import Fore, Back, Style
+import sys 
 class Individual:
 	def __init__(self, id):
 		self.gens = []
@@ -11,7 +12,7 @@ class Individual:
 		for i in range(8):
 			self.gens.append(random.randint(0,7))
 
-	def getAptitude(self):
+	def calculateAptitude(self):
 		crashes = 0
 		for i in range(8):
 			actual = self.gens[i]
@@ -24,6 +25,8 @@ class Individual:
 		self.aptitude = 28 - crashes
 		"""print(f"Pares sin choques {self.aptitude}!")"""
 	def printBoard(self):
+		#print('\x1B[2;0H')
+		print(f"{Fore.GREEN}Aptitud {self.aptitude}{Style.RESET_ALL}", end="\n")
 		isWhite = True
 		for i in range(8):
 			for j in range(8):
