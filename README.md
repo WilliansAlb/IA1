@@ -78,6 +78,16 @@ python main.py
 * Python Libraries: 
 	- random
 	- colorama
+	- time
 
 ### Problem
-Modelar un algoritmo génetico que resuelva el problema de las 8 reinas, consistiendo este de colocar 8 reinas en el tablero de ajedrez, sin que ninguna de ellas choquen entre sí.
+Modelar un algoritmo génetico que resuelva el problema de las 8 reinas, consistiendo este de colocar 8 reinas en el tablero de ajedrez, sin que ninguna de ellas se ataquen.
+
+### How to run
+1. Open the *main.py* on directory _EightQueensPractice_
+2. Change the values of the variables *MAX_GENERATIONS* and *SIZE_POPULATION* to the desired ones.
+3. Open a console and run the command
+
+```
+python main.py
+```

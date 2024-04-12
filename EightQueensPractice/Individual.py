@@ -1,6 +1,5 @@
 import random
 from colorama import Fore, Back, Style
-import sys 
 class Individual:
 	def __init__(self, id):
 		self.gens = []
@@ -26,28 +25,28 @@ class Individual:
 		"""print(f"Pares sin choques {self.aptitude}!")"""
 	def printBoard(self):
 		#print('\x1B[2;0H')
-		print(f"{Fore.GREEN}Aptitud {self.aptitude}{Style.RESET_ALL}", end="\n")
+		print(f"{Fore.GREEN}Aptitude {self.aptitude}{Style.RESET_ALL}", end="\n")
 		isWhite = True
 		for i in range(8):
 			for j in range(8):
 				if isWhite:
-					print(Back.WHITE+ '     '+ Style.RESET_ALL,end ="")
+					print(Back.WHITE+ '       '+ Style.RESET_ALL,end ="")
 				else :
-					print(Back.BLACK+ '     '+ Style.RESET_ALL,end ="")
+					print(Back.BLACK+ '       '+ Style.RESET_ALL,end ="")
 				isWhite = not isWhite
 			print('', end='\n')
 			for j in range(8):
 				if isWhite:
-					print(Back.WHITE+ ' '+ ('♛' if self.gens[j]== i else ' ') + '   '+ Style.RESET_ALL,end ="")
+					print(Back.WHITE+ '  '+ ('♛' if self.gens[j]== i else ' ') + '    '+ Style.RESET_ALL,end ="")
 				else:
-					print(Back.BLACK+ ' '+ ('♛' if self.gens[j]== i else ' ') + '   '+ Style.RESET_ALL,end ="")
+					print(Back.BLACK+ '  '+ ('♛' if self.gens[j]== i else ' ') + '    '+ Style.RESET_ALL,end ="")
 				isWhite = not isWhite
 			print('', end='\n')
 			for j in range(8):
 				if isWhite:
-					print(Back.WHITE+ '     '+ Style.RESET_ALL,end ="")
+					print(Back.WHITE+ '       '+ Style.RESET_ALL,end ="")
 				else :
-					print(Back.BLACK+ '     '+ Style.RESET_ALL,end ="")
+					print(Back.BLACK+ '       '+ Style.RESET_ALL,end ="")
 				isWhite = not isWhite
 			print('', end='\n')
 			isWhite = not isWhite

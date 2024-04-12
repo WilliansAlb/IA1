@@ -1,4 +1,6 @@
 from Population import Population
 
-newPopulation = Population(100,1000)
+MAX_GENERATIONS = 5000
+SIZE_POPULATION = 500
+newPopulation = Population(SIZE_POPULATION,MAX_GENERATIONS)
 newPopulation.runGenerations()
