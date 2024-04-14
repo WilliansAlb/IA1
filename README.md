@@ -9,6 +9,8 @@ Implemente un programa que represente a la aspiradora y su mundo. Y que el usuar
 
 Cree dos formas de comportamiento para la aspiradora: estúpida o inteligente
 
+![Alt text](img/CleanPractice.png)
+
 ### Version 1
 #### Tools
 * Python 3.2.1
@@ -51,6 +53,9 @@ python main.py
 3. Click over the square for dirtying and see what the vacuum do.
 
 ## PRÁCTICA 2 - VendingPractice
+
+![Alt text](img/VendingPractice.png)
+
 ### Tools
 * Python 3.2.1
 * Python Libraries: 
@@ -73,13 +78,15 @@ python main.py
 3. Click over the space for insert coin or an option of soda. Additional, is added a click area for get the sodas.
 
 ## PRÁCTICA 3 - EightQueensPractice
+
+![Alt text](img/EightQueensPractice.png)
+
 ### Tools
 * Python 3.2.1
 * Python Libraries: 
 	- random
 	- colorama
 	- time
-
 ### Problem
 Modelar un algoritmo génetico que resuelva el problema de las 8 reinas, consistiendo este de colocar 8 reinas en el tablero de ajedrez, sin que ninguna de ellas se ataquen.
 
