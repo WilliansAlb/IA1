@@ -5,3 +5,7 @@ class Street:
         self.isCross = isCross
         self.route = route
         self.direction = direction
+        self.nodes = []
+        self.node = None
+        self.image = None
+        self.text = None

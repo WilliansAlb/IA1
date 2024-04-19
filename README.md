@@ -101,6 +101,8 @@ python main.py
 
 ## PROJECT 1 - Traffic Generational Model
 
+![Alt text](img/Project1.png)
+
 ### Objetivos generales
 - Aplicación de algoritmos genéticos en la resolución de problemas reales.
 
