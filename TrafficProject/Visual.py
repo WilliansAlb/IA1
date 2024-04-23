@@ -75,7 +75,14 @@ class Visual:
 		submit_button = tk.Button(input_dialog, text="Submit", command=submit_inputs)
 		submit_button.grid(row=1, columnspan=2, padx=10, pady=10)
 	def run_generational(self):
-		print(len(self.generational.nodes))
+		for node in self.generational.nodes:
+			for out in node.outs:
+				for line in self.streets:
+					for street in line:
+						if street !=None and not street.isCross:
+							if node == street.nodes[0] and out.node == street.nodes[1]:
+								out.square = street
+		self.generational.runModel(self.canvas, self.font, self.root)
 	def click_map(self, event):
 		x = event.x // 50 * 50
 		y = event.y // 50 * 50
@@ -131,7 +138,6 @@ class Visual:
 		entry_percentage = tk.Entry(input_dialog, textvariable=previous_percentage)
 		entry_percentage.grid(row=1, column=1, padx=10, pady=5)
 		self.canvas.delete(tag)
-		if street.text != None: self.canvas.delete(street.text)
 		def submit_inputs():
 			street.text = self.canvas.create_text(street.x * 50 + 25, street.y * 50+25, text=f"\uf5e4 {entry_cars.get()} \n % {entry_percentage.get()}", fill="black", font=self.font, tags=tag)
 			node.max_percentage = entry_percentage.get()
@@ -168,26 +174,19 @@ class Visual:
 			if len(self.toJoin) == 1:
 				x0, y0 = self.toJoin[0].x, self.toJoin[0].y
 				if (x0 == xIndex or y0 == yIndex):
+					self.toJoin.append(self.streets[yIndex][xIndex])
+					self.toJoin[0].node.outs.append(ConfigurationNode(self.toJoin[1].node,0,0,0))
+					self.toJoin[1].node.ins.append(self.toJoin[0].node)
 					if (x0 == xIndex):
-						self.toJoin.append(self.streets[yIndex][xIndex])
-						self.toJoin[0].node.outs.append(ConfigurationNode(self.toJoin[1].node,0,0,0))
-						self.toJoin[1].node.ins.append(self.toJoin[0].node)
-						difference = int(abs(yIndex - y0)/2)
 						for i in range(min(y0, yIndex)+1, min(y0, yIndex) + abs(y0 - yIndex)):
 							self.drawImageStreet(x0, i, 90, "city/street1.png")
-							if min(y0, yIndex) + difference == i:
-								if y0 < yIndex: self.streets[i][x0].text = self.canvas.create_text(x0 * 50 + 25, i * 50+25, text=f"\uf309", fill="black", font=self.font)
-								else: self.streets[i][x0].text = self.canvas.create_text(x0 * 50 + 25, i * 50+25, text=f"\uf30c", fill="black", font=self.font)
+							if y0 < yIndex: self.streets[i][x0].text = self.canvas.create_text(x0 * 50 + 25, i * 50+25, text=f"\uf309", fill="yellow", font=self.font)
+							else: self.streets[i][x0].text = self.canvas.create_text(x0 * 50 + 25, i * 50+25, text=f"\uf30c", fill="yellow", font=self.font)
 					else:
-						self.toJoin.append(self.streets[yIndex][xIndex])
-						self.toJoin[0].node.outs.append(ConfigurationNode(self.toJoin[1].node,0,0,0))
-						self.toJoin[1].node.ins.append(self.toJoin[0].node)
-						difference = int(abs(xIndex - x0)/2)
 						for i in range(min(x0, xIndex)+1, min(x0, xIndex) + abs(x0 - xIndex)):
 							self.drawImageStreet(i, y0, None, "city/street1.png")
-							if min(x0, xIndex) + difference == i:
-								if x0 < xIndex: self.streets[y0][i].text = self.canvas.create_text(i * 50 + 25, y0 * 50+25, text=f"\uf30b", fill="black", font=self.font)
-								else: self.streets[y0][i].text = self.canvas.create_text(i * 50 + 25, y0 * 50+25, text=f"\uf30a", fill="black", font=self.font)
+							if x0 < xIndex: self.streets[y0][i].text = self.canvas.create_text(i * 50 + 25, y0 * 50+25, text=f"\uf30b", fill="yellow", font=self.font)
+							else: self.streets[y0][i].text = self.canvas.create_text(i * 50 + 25, y0 * 50+25, text=f"\uf30a", fill="yellow", font=self.font)
 					self.toJoin = []
 					self.canvas.delete("rect")
 					return
@@ -198,44 +197,41 @@ class Visual:
 				print(self.toJoin[0].node.outs)
 				self.toJoin[0].node.outs.append(ConfigurationNode(self.toJoin[1].node,0,0,0))
 				self.toJoin[1].node.ins.append(self.toJoin[0].node)
+				xInitial, yInitial = self.toJoin[0].x, self.toJoin[0].y
+				xDestiny, yDestiny = self.toJoin[1].x, self.toJoin[1].y
+				xDifference = xInitial - xDestiny
+				yDifference = yInitial - yDestiny
+				left = xDifference >= 0
+				up = yDifference >= 0
+				self.toJoin[0].direction = [left,up]
 				self.canvas.rect2 = self.canvas.create_rectangle(xIndex*50, yIndex*50,xIndex*50 + 50, yIndex*50+ 50, outline = 'blue', tags="rect")
 		else:
 			x1, y1 = xIndex, yIndex
+			isCorner = False
+			isHorizontal = False
 			if (x1 == self.toJoin[0].x and y1 == self.toJoin[0].y) or (x1 == self.toJoin[1].x and y1 == self.toJoin[1].y):
 				self.toJoin = []
 				self.canvas.delete("rect")
 				return
 			if (x1 == self.toJoin[0].x or y1 == self.toJoin[0].y) and (x1 == self.toJoin[1].x or y1 == self.toJoin[1].y):
+				isCorner = True
 				if (x1 == self.toJoin[0].x and y1 == self.toJoin[1].y):
-					if self.toJoin[0].x < self.toJoin[1].x:
-						if self.toJoin[0].y < self.toJoin[1].y:self.drawImageStreet(x1, y1, 270, "city/corner1.png")
-						else: self.drawImageStreet(x1, y1, 180, "city/corner1.png")
-						self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"\uf30b", fill="black", font=self.font)
-					else:
-						if self.toJoin[0].y < self.toJoin[1].y:self.drawImageStreet(x1, y1, None, "city/corner1.png")
-						else: self.drawImageStreet(x1, y1, 90, "city/corner1.png")
-						self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"\uf30a", fill="black", font=self.font)
+					if self.toJoin[0].x < self.toJoin[1].x: self.drawImageStreet(x1, y1, 270 if self.toJoin[0].y < self.toJoin[1].y else 180, "city/corner1.png")
+					else: self.drawImageStreet(x1, y1, None if self.toJoin[0].y < self.toJoin[1].y else 90, "city/corner1.png")
 				else:
-					if self.toJoin[0].y < self.toJoin[1].y:
-						if self.toJoin[0].x < self.toJoin[1].x:
-							self.drawImageStreet(x1, y1, 90, "city/corner1.png")
-							self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"\uf30b", fill="black", font=self.font)
-						else:
-							self.drawImageStreet(x1, y1, 180, "city/corner1.png")
-							self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"\uf30a", fill="black", font=self.font) 
-					else:
-						if self.toJoin[0].x < self.toJoin[1].x:
-							self.drawImageStreet(x1, y1, None, "city/corner1.png")
-							self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"\uf30b", fill="black", font=self.font)
-						else:
-							self.drawImageStreet(x1, y1, 270, "city/corner1.png")
-							self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"\uf30a", fill="black", font=self.font) 
-			elif (x1 == self.toJoin[0].x or y1 == self.toJoin[0].y):
-				if x1 == self.toJoin[0].x: self.drawImageStreet(x1,y1,90, "city/street1.png")
-				else: self.drawImageStreet(x1, y1, None, "city/street1.png")
-			elif (x1 == self.toJoin[1].x or y1 == self.toJoin[1].y):
-				if x1 == self.toJoin[1].x: self.drawImageStreet(x1,y1,90, "city/street1.png")
-				else: self.drawImageStreet(x1, y1, None, "city/street1.png")
+					if self.toJoin[0].y < self.toJoin[1].y: self.drawImageStreet(x1, y1, 90 if self.toJoin[0].x < self.toJoin[1].x else 180, "city/corner1.png")
+					else: self.drawImageStreet(x1, y1, None if self.toJoin[0].x < self.toJoin[1].x else 270, "city/corner1.png")
+			elif x1 == self.toJoin[0].x or x1 == self.toJoin[1].x: self.drawImageStreet(x1,y1,90, "city/street1.png")
+			elif y1 == self.toJoin[0].y or y1 == self.toJoin[1].y: 
+				self.drawImageStreet(x1, y1, None, "city/street1.png")
+				isHorizontal = True
+			if self.streets[y1][x1] != None:
+				self.streets[y1][x1].direction = self.toJoin[0].direction
+				if not isCorner:
+					if isHorizontal:
+						self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"{'\uf30a' if self.toJoin[0].direction[0] else '\uf30b'}", fill="yellow", font=self.font, tags="direction")
+					else: 
+						self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50+25, text=f"{'\uf30c' if self.toJoin[0].direction[1] else '\uf309'}", fill="yellow", font=self.font, tags="direction")
 	def changeMode(self, newMode):
 		self.mode = newMode
 		for btn in self.collectionButtons:

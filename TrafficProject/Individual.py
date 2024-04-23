@@ -2,11 +2,14 @@ import copy
 import random
 import time
 class Individual:
-	def __init__(self, nodes):
+	def __init__(self, nodes, canvas, font, root):
 		self.aptitude = 0
 		self.gens = []
 		self.nodes = nodes
 		self.estimate = 0
+		self.canvas = canvas
+		self.font = font
+		self.root = root
 		self.randomize()
 	def randomize(self):
 		temporal = copy.deepcopy(self.nodes)
@@ -38,6 +41,11 @@ class Individual:
 				self.recursive_evaluate(out.node)
 		else:
 			self.aptitude += node.cars
+	def draw_individual(self):
+		for node in self.gens:
+			for out in node.outs:
+				self.canvas.create_text(out.square.x * 50 + 25, out.square.y * 50+25, text=f"%{out.generated}", fill="white", font=("FontAwesome",12,"bold"), tags='generated')
+				self.root.update()
 	def recursive_generate(self, outs):
 		percentage = 100
 		if len(outs) != 0:
@@ -56,4 +64,6 @@ class Individual:
 						percentage = percentage - generated
 						#print(f"Genera {out.generated} y se va al nodo {out.node.index}")
 					else: out.generated = percentage
+					self.canvas.create_text(out.square.x * 50 + 25, out.square.y * 50+25, text=f"%{out.generated}", fill="white", font=("FontAwesome",12,"bold"), tags='generated')
+					self.root.update()
 					self.recursive_generate(out.node.outs)
