@@ -44,23 +44,42 @@ class Generational:
 		print("\033[H\033[J", end="")
 		print('\x1B[1;0H')
 		canvas.delete('generated')
-		parent_a, parent_b = self.roulette_selection()
-		child_a, child_b = self.crossover(parent_a, parent_b)
+		parents = self.roulette_selection()
+		for index in range(0, len(parents), 2):
+			child_a, child_b = self.crossover(parents[index], parents[index + 1])
+			self.individuals[index].gens = child_a
+			self.individuals[index].evaluate_fitness()
+			self.individuals[index + 1].gens = child_b
+			self.individuals[index + 1].evaluate_fitness()
+		if i % self.for_each_m_generation == 0:
+			print("doing mutations")
 		sorted_individuals = sorted(self.individuals, key=lambda x: x.aptitude, reverse=True)
-		self.individuals[-2].gens = child_a
-		self.individuals[-2].evaluate_fitness()
-		self.individuals[-1].gens = child_b
-		self.individuals[-1].evaluate_fitness()
 		print(f'Best individual of {i + 1} generation is {sorted_individuals[0].aptitude}')
 		run_data.configure(text=f'\uf0c0 {i + 1} \uf2f5\uf5e4 {sorted_individuals[0].aptitude} % {sorted_individuals[0].aptitude / sorted_individuals[0].estimate * 100}')
 		self.last_efficiency = sorted_individuals[0].aptitude/sorted_individuals[0].estimate * 100
 		sorted_individuals[0].draw_individual()
 		time.sleep(0.025)
+
+	def do_mutations(self):
+		count_mutations = 0
+		while count_mutations < self.do_n_mutation:
+			individual = random.choice(self.individuals)
+			gen = random.choice(individual.gens)
+			if len(gen.outs) <= 1:
+				continue
+			else:
+				percentage = 100 - sum(int(out.max_percentage) for out in gen.outs)
+				for out in gen.outs:
+					percentage += int(out.max_percentage)
+					random_percentage = random.randint(1, percentage)
+					out.max_percentage = random_percentage
+					percentage -= random_percentage
+				individual.evaluate_fitness()
 	def roulette_selection(self):
 		random.shuffle(self.individuals)
 		total = sum(individual.aptitude for individual in self.individuals)
 		parents = []
-		for _ in range(2):
+		for _ in range(len(self.individuals)):
 			spin = random.uniform(0, total)
 			carry = 0
 			for individual in self.individuals:
