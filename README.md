@@ -157,3 +157,11 @@ La aplicación debe permitir al usuario en cualquier momento detener la ejecuci�
 
 La aplicación debe permitir guardar los modelos para que cuando se vuelva a ejecutar la aplicación el usuario pueda usar algún modelo previamente guardado.
 
+## PerceptronSimplePractice
+Realizar el código correspondiente a un perceptron que devuelva el valor de una compuerta or y and siguiendo los siguientes pasos:
+1. Iniciar pesos y umbral (sesgo) de forma aleatoria
+2. Aplicar las entradas a la red
+3. Calcular la salida ‘z’
+4. Comparar el resultado obtenido con el deseado. A la diferencia entre ambos se llama ‘error’ (‘e’)
+5. Modificar pesos y umbral según el error obtenido
+6. Repetir hasta que el error esté dentro de un rango aceptable (< 1%)
