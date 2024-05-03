@@ -4,6 +4,8 @@ from Street import Street
 from PIL import Image, ImageTk
 from Node import Node, ConfigurationNode
 from tkinter import font
+from tkinter import filedialog
+from SerialStreet import SerialStreet
 import pickle
 
 
@@ -26,6 +28,7 @@ class Visual:
         self.runButton = None
         self.saveButton = None
         self.stopButton = None
+        self.loadButton = None
         self.collectionButtons = []
         self.initialize()
 
@@ -35,25 +38,32 @@ class Visual:
         self.button_frame.pack(side=tk.TOP)
         self.canvas = tk.Canvas(self.root, width=1000, height=600, bg="#77dd77")
         # Create buttons
+        label_map = tk.Label(self.button_frame, font=self.font, text=f"\uf279 Traffic Edition")
+        label_settings = tk.Label(self.button_frame, font=self.font, text=f"\uf471 Model")
         self.putCrossButton = tk.Button(self.button_frame, text="\uf637", font=(self.font, 10, "bold"))
         self.joinCrossesButton = tk.Button(self.button_frame, text="\uf018", font=self.font)
         self.settingButton = tk.Button(self.button_frame, text="\uf1de", font=self.font)
-        self.runButton = tk.Button(self.button_frame, text="\uf01e", font=self.font)
+        self.runButton = tk.Button(self.button_frame, text="\uf04b", font=self.font)
         self.stopButton = tk.Button(self.button_frame, text="\uf256", font=self.font)
         self.saveButton = tk.Button(self.button_frame, text="\uf0c7", font=self.font)
+        self.loadButton = tk.Button(self.button_frame, text="\uf093", font=self.font)
         self.saveButton.bind("<Button-1>", lambda event: self.show_modal_save())
         self.collectionButtons = [self.putCrossButton, self.joinCrossesButton, self.settingButton]
         self.putCrossButton.bind("<Button-1>", lambda event: self.change_mode("put"))
-        self.putCrossButton.pack(side=tk.LEFT)
         self.joinCrossesButton.bind("<Button-1>", lambda event: self.change_mode("join"))
-        self.joinCrossesButton.pack(side=tk.LEFT)
         self.settingButton.bind("<Button-1>", lambda event: self.change_mode("setting"))
-        self.settingButton.pack(side=tk.LEFT)
         self.runButton.bind("<Button-1>", lambda event: self.run_generational())
-        self.runButton.pack(side=tk.LEFT)
         self.stopButton.bind("<Button-1>", lambda event: self.stop_generational())
+        self.loadButton.bind("<Button-1>", lambda event: self.show_modal_load())
+        label_map.pack(side=tk.LEFT)
+        self.putCrossButton.pack(side=tk.LEFT)
+        self.joinCrossesButton.pack(side=tk.LEFT)
+        self.settingButton.pack(side=tk.LEFT)
+        label_settings.pack(side=tk.LEFT)
+        self.runButton.pack(side=tk.LEFT)
         self.stopButton.pack(side=tk.LEFT)
         self.saveButton.pack(side=tk.LEFT)
+        self.loadButton.pack(side=tk.LEFT)
         self.putCrossButton.configure(bg="red", fg="#DAF7A6")
         self.run_data = tk.Label(self.root, font=(self.font, 14, "bold"), text=f"Traffic Project", anchor="center")
         self.run_data.pack(side='bottom')
@@ -80,6 +90,48 @@ class Visual:
     def stop_generational(self):
         self.generational.stop = True
 
+    def show_modal_load(self):
+        file_path = filedialog.askopenfilename()
+        loaded = None
+        if file_path:
+            with open(file_path, 'rb') as file:
+                # Do something with the file, such as printing its contents
+                loaded = pickle.load(file)
+                self.generational.nodes = []
+                if loaded:
+                    for row in self.streets:
+                        for street in row:
+                            street = None
+                    self.canvas.delete("streets")
+                    self.canvas.delete("direction")
+                    self.canvas.delete("rect")
+                    self.canvas.delete("data")
+                    for row1, row2 in zip(loaded, self.streets):
+                        for serial_street, street in zip(row1, row2):
+                            if serial_street is not None:
+                                if serial_street.is_cross:
+                                    self.put_node(serial_street.y, serial_street.x, serial_street.x * 50,
+                                                  serial_street.y * 50)
+                                else:
+                                    if not serial_street.is_corner:
+                                        self.draw_image_street(serial_street.x, serial_street.y, serial_street.grades,
+                                                               "city/street1v2.png")
+                                    else:
+                                        self.draw_image_street(serial_street.x, serial_street.y, serial_street.grades,
+                                                               "city/corner1v2.png")
+                                if serial_street.text is not None:
+                                    self.canvas.create_text(serial_street.x * 50 + 25, serial_street.y * 50 + 25,
+                                                            text=f"{serial_street.text}",
+                                                            fill="white", font=self.font, tags="data")
+                                if serial_street.direction is not None:
+                                    self.canvas.create_text(serial_street.x * 50 + 25, serial_street.y * 50 + 25,
+                                                            text=serial_street.direction, fill="#DAF7A6",
+                                                            font=(self.font, 8),
+                                                            tags="direction")
+                                if serial_street.node is not None:
+                                    self.streets[serial_street.y][serial_street.x].node = serial_street.node
+
+
     def show_modal_save(self):
         input_dialog = tk.Toplevel(self.root)
         input_dialog.title("Name")
@@ -90,8 +142,26 @@ class Visual:
 
         def submit_inputs():
             inputs = entry.get()
+            serial_streets = []
+            for row in self.streets:
+                temp_serial = []
+                for street in row:
+                    if street is not None:
+                        print(street.label, inputs)
+                        new_serial = SerialStreet(street.isCross, street.is_corner, street.grades, street.direction_label,
+                                                  street.label, street.x, street.y)
+                        if street.node is not None:
+                            new_node = Node(street.node.cars, street.node.ins, [], street.node.index)
+                            for out in street.node.outs:
+                                new_node.outs.append(
+                                    ConfigurationNode(out.node, out.max_cars, out.max_percentage, out.generated))
+                            new_serial.node = new_node
+                        temp_serial.append(new_serial)
+                    else:
+                        temp_serial.append(None)
+                serial_streets.append(temp_serial)
             with open(f"{inputs}.pkl", 'wb') as file:
-                pickle.dump(self.generational.nodes, file)
+                pickle.dump(serial_streets, file)
             input_dialog.destroy()
 
         submit_button = tk.Button(input_dialog, text="SAVE", command=submit_inputs)
@@ -143,7 +213,8 @@ class Visual:
             node.cars = int(inputs)
             street.text = self.canvas.create_text(street.x * 50 + 25, street.y * 50 + 25,
                                                   text=f"{'\uf5e4 \uf090' if len(node.ins) == 0 else '\uf08b \uf5e4'} \n {inputs}",
-                                                  fill="white", font=self.font)
+                                                  fill="white", font=self.font, tags="data")
+            street.label = f"{'\uf5e4 \uf090' if len(node.ins) == 0 else '\uf08b \uf5e4'} \n {inputs}"
             input_dialog.destroy()
 
         submit_button = tk.Button(input_dialog, text="Submit", command=submit_inputs)
@@ -169,13 +240,15 @@ class Visual:
             label = f"\uf5e4 {entry_cars.get()} \n % {entry_percentage.get()}"
             x = street.x * 50 + 25
             y = street.y * 50 + 25
-            street.text = self.canvas.create_text(x, y, text=label, fill="white", font=self.font, tags=tag)
+            street.text = self.canvas.create_text(x, y, text=label, fill="white", font=self.font, tags=(tag, "data"))
+            street.label = label
             node.max_percentage = entry_percentage.get()
             node.max_cars = entry_cars.get()
             input_dialog.destroy()
 
         submit_button = tk.Button(input_dialog, text="Submit", command=submit_inputs)
         submit_button.grid(row=2, columnspan=2, padx=10, pady=10)
+
     def show_modal_run(self):
         input_dialog = tk.Toplevel(self.root)
         input_dialog.title("Run Data")
@@ -207,7 +280,8 @@ class Visual:
         label_mutation.grid(row=4, columnspan=2, padx=10, pady=10)
 
         button_mutation = None
-        button_mutation = tk.Button(input_dialog, font=self.font, text="\uf0c0" if self.generational.generation_based_end else '%')
+        button_mutation = tk.Button(input_dialog, font=self.font,
+                                    text="\uf0c0" if self.generational.generation_based_end else '%')
         button_mutation.bind("<Button-1>", lambda event: self.switch_mutation(button_mutation))
         button_mutation.grid(row=5, column=0, padx=10, pady=5, sticky="e")
         previous_completion_criteria = tk.StringVar()
@@ -234,6 +308,7 @@ class Visual:
     def switch_mutation(self, button):
         self.generational.generation_based_end = not self.generational.generation_based_end
         button.config(text="\uf0c0 Generations" if self.generational.generation_based_end else '% Efficiency')
+
     def put_node(self, y_index, x_index, x, y):
         image = Image.open("city/cross2v2.png")
         self.toJoin = []
@@ -241,7 +316,7 @@ class Visual:
         if self.streets[y_index][x_index] is None:
             self.streets[y_index][x_index] = Street(x_index, y_index, True, None, None)
             photo = ImageTk.PhotoImage(image)
-            self.canvas.create_image(x, y, anchor=tk.NW, image=photo)
+            self.canvas.create_image(x, y, anchor=tk.NW, image=photo, tags="streets")
             self.streets[y_index][x_index].image = photo
             if self.streets[y_index][x_index].node is None:
                 new_node = Node(None, [], [], len(self.generational.nodes))
@@ -253,9 +328,10 @@ class Visual:
         if rotation is not None:
             image = image.rotate(rotation)
         self.streets[y][x] = Street(x, y, False, None, None)
-        self.streets[y][x].nodes = [self.toJoin[0].node, self.toJoin[1].node]
+        if self.toJoin is not None and len(self.toJoin) > 0:
+            self.streets[y][x].nodes = [self.toJoin[0].node, self.toJoin[1].node]
         photo = ImageTk.PhotoImage(image)
-        self.canvas.create_image(x * 50, y * 50, anchor=tk.NW, image=photo)
+        self.canvas.create_image(x * 50, y * 50, anchor=tk.NW, image=photo, tags="streets")
         self.canvas.street_images.append(photo)
 
     def join_crosses(self, y_index, x_index):
@@ -271,25 +347,35 @@ class Visual:
                     if x0 == x_index:
                         for i in range(min(y0, y_index) + 1, min(y0, y_index) + abs(y0 - y_index)):
                             self.draw_image_street(x0, i, 90, "city/street1v2.png")
+                            self.streets[i][x0].grades = 90
                             if y0 < y_index:
                                 self.streets[i][x0].text = self.canvas.create_text(x0 * 50 + 25, i * 50 + 25,
                                                                                    text=f"\uf309", fill="#DAF7A6",
-                                                                                   font=(self.font, 8))
+                                                                                   font=(self.font, 8),
+                                                                                   tags="direction")
+                                self.streets[i][x0].direction_label = f"\uf309"
                             else:
                                 self.streets[i][x0].text = self.canvas.create_text(x0 * 50 + 25, i * 50 + 25,
                                                                                    text=f"\uf30c", fill="#DAF7A6",
-                                                                                   font=(self.font, 8))
+                                                                                   font=(self.font, 8),
+                                                                                   tags="direction")
+                                self.streets[i][x0].direction_label = f"\uf30c"
                     else:
                         for i in range(min(x0, x_index) + 1, min(x0, x_index) + abs(x0 - x_index)):
                             self.draw_image_street(i, y0, None, "city/street1v2.png")
+                            self.streets[y0][i].grades = None
                             if x0 < x_index:
                                 self.streets[y0][i].text = self.canvas.create_text(i * 50 + 25, y0 * 50 + 25,
                                                                                    text=f"\uf30b", fill="#DAF7A6",
-                                                                                   font=(self.font, 8))
+                                                                                   font=(self.font, 8),
+                                                                                   tags="direction")
+                                self.streets[y0][i].direction_label = "\uf30b"
                             else:
                                 self.streets[y0][i].text = self.canvas.create_text(i * 50 + 25, y0 * 50 + 25,
                                                                                    text=f"\uf30a", fill="#DAF7A6",
-                                                                                   font=(self.font, 8))
+                                                                                   font=(self.font, 8),
+                                                                                   tags="direction")
+                                self.streets[y0][i].direction_label = f"\uf30a"
                     self.toJoin = []
                     self.canvas.delete("rect")
                     return
@@ -326,34 +412,43 @@ class Visual:
                     if self.toJoin[0].x < self.toJoin[1].x:
                         self.draw_image_street(x1, y1, 270 if self.toJoin[0].y < self.toJoin[1].y else 180,
                                                "city/corner1v2.png")
+                        self.streets[y1][x1].grades = 270 if self.toJoin[0].y < self.toJoin[1].y else 180
                     else:
                         self.draw_image_street(x1, y1, None if self.toJoin[0].y < self.toJoin[1].y else 90,
                                                "city/corner1v2.png")
+                        self.streets[y1][x1].grades = None if self.toJoin[0].y < self.toJoin[1].y else 90
                 else:
                     if self.toJoin[0].y < self.toJoin[1].y:
                         self.draw_image_street(x1, y1, 90 if self.toJoin[0].x < self.toJoin[1].x else 180,
                                                "city/corner1v2.png")
+                        self.streets[y1][x1].grades = 90 if self.toJoin[0].x < self.toJoin[1].x else 180
                     else:
                         self.draw_image_street(x1, y1, None if self.toJoin[0].x < self.toJoin[1].x else 270,
                                                "city/corner1v2.png")
+                        self.streets[y1][x1].grades = None if self.toJoin[0].x < self.toJoin[1].x else 270
             elif x1 == self.toJoin[0].x or x1 == self.toJoin[1].x:
                 self.draw_image_street(x1, y1, 90, "city/street1v2.png")
+                self.streets[y1][x1].grades = 90
             elif y1 == self.toJoin[0].y or y1 == self.toJoin[1].y:
                 self.draw_image_street(x1, y1, None, "city/street1v2.png")
+                self.streets[y1][x1].grades = None
                 is_horizontal = True
             if self.streets[y1][x1] is not None:
                 self.streets[y1][x1].direction = self.toJoin[0].direction
+                self.streets[y1][x1].is_corner = is_corner
                 if not is_corner:
                     if is_horizontal:
                         self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50 + 25,
                                                                             text=f"{'\uf30a' if self.toJoin[0].direction[0] else '\uf30b'}",
                                                                             fill="#DAF7A6", font=(self.font, 8),
                                                                             tags="direction")
+                        self.streets[y1][x1].direction_label = f"{'\uf30a' if self.toJoin[0].direction[0] else '\uf30b'}"
                     else:
                         self.streets[y1][x1].text = self.canvas.create_text(x1 * 50 + 25, y1 * 50 + 25,
                                                                             text=f"{'\uf30c' if self.toJoin[0].direction[1] else '\uf309'}",
                                                                             fill="#DAF7A6", font=(self.font, 8),
                                                                             tags="direction")
+                        self.streets[y1][x1].direction_label = f"{'\uf30c' if self.toJoin[0].direction[1] else '\uf309'}"
 
     def change_mode(self, new_mode):
         self.mode = new_mode

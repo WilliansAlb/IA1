@@ -5,6 +5,8 @@ class Node:
 		self.ins = ins
 		self.outs = outs
 		self.index = index
+
+
 class ConfigurationNode:
 	def __init__(self, node, max_cars, max_percentage, generated):
 		self.node = node
