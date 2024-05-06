@@ -1,6 +1,5 @@
 import copy
 import random
-import time
 
 
 class Individual:
@@ -18,7 +17,7 @@ class Individual:
         temporal = copy.deepcopy(self.nodes)
         for node in temporal:
             if len(node.outs) == 0:
-                self.estimate += node.cars
+                self.estimate += node.cars if node.cars is not None else 0
         for node in temporal:
             if len(node.ins) == 0:
                 self.recursive_generate(node.outs)
@@ -33,7 +32,7 @@ class Individual:
         for node in self.gens:
             if len(node.ins) == 0:
                 self.recursive_evaluate(node)
-        print(f"Estimate {self.estimate} and getting {self.aptitude}")
+        #print(f"Estimate {self.estimate} and getting {self.aptitude}")
 
     def recursive_evaluate(self, node):
         if len(node.outs) != 0:
@@ -56,21 +55,19 @@ class Individual:
     def recursive_generate(self, outs):
         percentage = 100
         if len(outs) != 0:
-            if len(outs) == 0:
+            if len(outs) == 1:
                 outs[0].generated = 100
                 self.recursive_generate(outs[0].node.outs)
             else:
                 count = 0
+                percentage = 100 - sum(int(out.max_percentage) for out in outs)
                 for out in outs:
                     count = count + 1
+                    percentage += int(out.max_percentage)
                     if count != len(outs):
-                        percentage = 2 if percentage <= 1 else percentage
-                        generated = random.randint(1, percentage)
-                        if generated < int(out.max_percentage):
-                            out.generated = int(out.max_percentage)
-                        else:
-                            out.generated = generated
-                        percentage = percentage - generated
+                        generated = random.randint(int(out.max_percentage), percentage)
+                        out.generated = generated
+                        percentage -= generated
                     # print(f"Genera {out.generated} y se va al nodo {out.node.index}")
                     else:
                         out.generated = percentage

@@ -92,12 +92,12 @@ class Visual:
 
     def show_modal_load(self):
         file_path = filedialog.askopenfilename()
-        loaded = None
         if file_path:
             with open(file_path, 'rb') as file:
                 # Do something with the file, such as printing its contents
                 loaded = pickle.load(file)
                 self.generational.nodes = []
+                temp_nodes = []
                 if loaded:
                     for row in self.streets:
                         for street in row:
@@ -130,7 +130,10 @@ class Visual:
                                                             tags="direction")
                                 if serial_street.node is not None:
                                     self.streets[serial_street.y][serial_street.x].node = serial_street.node
-
+                                    temp_nodes.append(serial_street.node)
+                                if serial_street.nodes is not None:
+                                    self.streets[serial_street.y][serial_street.x].nodes = serial_street.nodes
+                    self.generational.nodes = temp_nodes
 
     def show_modal_save(self):
         input_dialog = tk.Toplevel(self.root)
@@ -147,15 +150,12 @@ class Visual:
                 temp_serial = []
                 for street in row:
                     if street is not None:
-                        print(street.label, inputs)
                         new_serial = SerialStreet(street.isCross, street.is_corner, street.grades, street.direction_label,
                                                   street.label, street.x, street.y)
                         if street.node is not None:
-                            new_node = Node(street.node.cars, street.node.ins, [], street.node.index)
-                            for out in street.node.outs:
-                                new_node.outs.append(
-                                    ConfigurationNode(out.node, out.max_cars, out.max_percentage, out.generated))
-                            new_serial.node = new_node
+                            new_serial.node = street.node
+                        if street.nodes is not None and len(street.nodes) > 0:
+                            new_serial.nodes = street.nodes
                         temp_serial.append(new_serial)
                     else:
                         temp_serial.append(None)
@@ -209,7 +209,6 @@ class Visual:
 
         def submit_inputs():
             inputs = entry.get()
-            print("User entered:", inputs)
             node.cars = int(inputs)
             street.text = self.canvas.create_text(street.x * 50 + 25, street.y * 50 + 25,
                                                   text=f"{'\uf5e4 \uf090' if len(node.ins) == 0 else '\uf08b \uf5e4'} \n {inputs}",
@@ -384,7 +383,6 @@ class Visual:
                 self.canvas.rect1 = self.canvas.create_rectangle(x_index * 50, y_index * 50, x_index * 50 + 50,
                                                                  y_index * 50 + 50, outline='blue', tags="rect")
             elif len(self.toJoin) == 2:
-                print(self.toJoin[0].node.outs)
                 self.toJoin[0].node.outs.append(ConfigurationNode(self.toJoin[1].node, 0, 0, 0))
                 self.toJoin[1].node.ins.append(self.toJoin[0].node)
                 x_initial, y_initial = self.toJoin[0].x, self.toJoin[0].y

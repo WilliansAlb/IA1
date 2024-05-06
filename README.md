@@ -103,6 +103,14 @@ python main.py
 
 ![Alt text](img/Project1.png)
 
+### Tools
+* Python 3.2.1
+* Python Libraries: 
+	- random
+	- tkinter
+	- pickle
+    - copy
+
 ### Objetivos generales
 - Aplicación de algoritmos genéticos en la resolución de problemas reales.
 

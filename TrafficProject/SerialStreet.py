@@ -8,3 +8,4 @@ class SerialStreet:
         self.x = x
         self.y = y
         self.node = None
+        self.nodes = None

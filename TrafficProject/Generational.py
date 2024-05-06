@@ -71,8 +71,8 @@ class Generational:
 				percentage = 100 - sum(int(out.max_percentage) for out in gen.outs)
 				for out in gen.outs:
 					percentage += int(out.max_percentage)
-					random_percentage = random.randint(1, percentage)
-					out.max_percentage = random_percentage
+					random_percentage = random.randint(int(out.max_percentage), percentage) if out != gen.outs[-1] else percentage
+					out.generated = random_percentage
 					percentage -= random_percentage
 				individual.evaluate_fitness()
 	def roulette_selection(self):
