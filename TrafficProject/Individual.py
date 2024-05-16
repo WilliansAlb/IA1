@@ -19,29 +19,45 @@ class Individual:
             if len(node.outs) == 0:
                 self.estimate += node.cars if node.cars is not None else 0
         for node in temporal:
-            if len(node.ins) == 0:
-                self.recursive_generate(node.outs)
+            if len(node.outs) == 1:
+                node.outs[0].generated = 100
+                self.canvas.create_text(node.outs[0].square.x * 50 + 25, node.outs[0].square.y * 50 + 12, text=f"%{node.outs[0].generated}",
+                                        fill="#FFC300", font=("FontAwesome", 12, "bold"), tags='generated')
+                self.root.update()
+            else:
+                percentage = 100
+                for out in node.outs:
+                    if percentage > 1:
+                        out.generated = random.randint(1, percentage)
+                    else:
+                        out.generated = 0
+                    percentage -= out.generated
+                    self.canvas.create_text(out.square.x * 50 + 25, out.square.y * 50 + 12, text=f"%{out.generated}",
+                                            fill="#FFC300", font=("FontAwesome", 12, "bold"), tags='generated')
+                    self.root.update()
         self.gens = temporal
-        self.evaluate_fitness()
 
     def evaluate_fitness(self):
         self.aptitude = 0
         for node in self.gens:
+            node.in_cars = 0
             if len(node.ins) != 0:
                 node.cars = 0
         for node in self.gens:
             if len(node.ins) == 0:
                 self.recursive_evaluate(node)
-        #print(f"Estimate {self.estimate} and getting {self.aptitude}")
 
     def recursive_evaluate(self, node):
         if len(node.outs) != 0:
             for out in node.outs:
-                temporal = int(node.cars * out.generated / 100)
-                # print(out.generated, temporal)
-                if temporal > int(out.max_cars): temporal = int(out.max_cars)
-                out.node.cars = temporal
-                self.recursive_evaluate(out.node)
+                if node.cars * (out.generated / 100) > int(out.max_cars):
+                    out.node.cars += 0
+                else:
+                    out.node.cars += int(node.cars * (out.generated / 100))
+                out.node.in_cars += 1
+                if out.node.in_cars == len(out.node.ins):
+                    print(out.node.in_cars)
+                    self.recursive_evaluate(out.node)
         else:
             self.aptitude += node.cars
 

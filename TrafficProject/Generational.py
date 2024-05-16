@@ -23,7 +23,6 @@ class Generational:
 			print(f"Generate individual {i+1}")
 			run_data.configure(text=f"Generate individual {i+1}")
 			self.individuals.append(Individual(self.nodes, canvas, font, root))
-			time.sleep(0.025)
 		if self.generation_based_end:
 			for i in range(self.completion_criteria):
 				if not self.stop:
@@ -38,43 +37,42 @@ class Generational:
 				self.do_generation(canvas, count,  run_data)
 				count += 1
 		sorted_individuals = sorted(self.individuals, key=lambda x: x.aptitude, reverse=True)
-		print(sorted_individuals[0].gens[0].outs[0].generated, sorted_individuals[0].gens[0].outs[1].generated)
+		# print(sorted_individuals[0].gens[0].outs[0].generated, sorted_individuals[0].gens[0].outs[1].generated)
 
 	def do_generation(self, canvas, i, run_data):
-		print("\033[H\033[J", end="")
-		print('\x1B[1;0H')
 		canvas.delete('generated')
+		for individual in self.individuals:
+			individual.evaluate_fitness()
 		parents = self.roulette_selection()
+		sorted_individuals = sorted(self.individuals, key=lambda x: x.aptitude, reverse=True)
+		print(f'Best individual of {i + 1} generation is {sorted_individuals[0].aptitude}')
 		for index in range(0, len(parents), 2):
 			child_a, child_b = self.crossover(parents[index], parents[index + 1])
 			self.individuals[index].gens = child_a
-			self.individuals[index].evaluate_fitness()
 			self.individuals[index + 1].gens = child_b
-			self.individuals[index + 1].evaluate_fitness()
 		if i % self.for_each_m_generation == 0:
 			print("doing mutations")
-		sorted_individuals = sorted(self.individuals, key=lambda x: x.aptitude, reverse=True)
-		print(f'Best individual of {i + 1} generation is {sorted_individuals[0].aptitude}')
+			self.do_mutations()
 		run_data.configure(text=f'\uf0c0 {i + 1} \uf2f5\uf5e4 {sorted_individuals[0].aptitude} % {sorted_individuals[0].aptitude / sorted_individuals[0].estimate * 100}')
 		self.last_efficiency = sorted_individuals[0].aptitude/sorted_individuals[0].estimate * 100
 		sorted_individuals[0].draw_individual()
-		time.sleep(0.025)
 
 	def do_mutations(self):
 		count_mutations = 0
 		while count_mutations < self.do_n_mutation:
 			individual = random.choice(self.individuals)
 			gen = random.choice(individual.gens)
-			if len(gen.outs) <= 1:
-				continue
-			else:
-				percentage = 100 - sum(int(out.max_percentage) for out in gen.outs)
-				for out in gen.outs:
-					percentage += int(out.max_percentage)
-					random_percentage = random.randint(int(out.max_percentage), percentage) if out != gen.outs[-1] else percentage
-					out.generated = random_percentage
-					percentage -= random_percentage
-				individual.evaluate_fitness()
+			count_mutations += 1
+			percentage = 100
+			for out in gen.outs:
+				if out == gen.outs[-1]:
+					out.generated = percentage
+				else:
+					if percentage > 1:
+						out.generated = random.randint(1, percentage)
+					else:
+						out.generated = 0
+				percentage -= out.generated
 	def roulette_selection(self):
 		random.shuffle(self.individuals)
 		total = sum(individual.aptitude for individual in self.individuals)
