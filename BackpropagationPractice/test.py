@@ -1,7 +1,6 @@
 import random
 import math
 
-
 class NetworkV2:
     def __init__(self, n_input, n_hidden, n_output, n_hidden_neurons, learning_rate, epochs, is_sigmoid=True, is_step=True):
         self.n_input = n_input
@@ -23,9 +22,7 @@ class NetworkV2:
     def sigmoid_derivative(x):
         return x * (1 - x)
 
-    # Forward propagation function for n hidden layers
     def forward_propagation(self, x, weights, biases):
-        # Initialize input activations
         activations = [x]
         x_prev = x
         for W, b in zip(weights, biases):
@@ -39,9 +36,7 @@ class NetworkV2:
 
     @staticmethod
     def neuron_activation_function(neuron_weights, x, bias):
-        z = 0
-        for w_m, x_m in zip(neuron_weights, x):
-            z += w_m * x_m
+        z = sum(w_m * x_m for w_m, x_m in zip(neuron_weights, x))
         return z + bias
 
     def generate_random_weights_and_biases(self, architecture):
@@ -49,19 +44,30 @@ class NetworkV2:
         biases = [self.generate_random_matrix(architecture[i], 1) for i in range(1, len(architecture))]
         return weights, biases
 
-    def backpropagation(self, x, y):
+    @staticmethod
+    def generate_random_matrix(rows, cols):
+        return [[random.gauss(0, 1) for _ in range(cols)] for _ in range(rows)]
+
+    def initialization(self):
+        architecture = [self.n_input]
+        for _ in range(self.n_hidden):
+            architecture.append(self.n_hidden_neurons)
+        architecture.append(self.n_output)
+        self.weights, self.biases = self.generate_random_weights_and_biases(architecture)
+
+    def backpropagation(self, X, y):
         for epoch in range(self.epochs):
-            for xi, yi in zip(x, y):
+            for xi, yi in zip(X, y):
                 # Forward propagation
                 activations = self.forward_propagation(xi, self.weights, self.biases)
                 output = activations[-1]
+                print(output)
 
                 # Error in output
-                error_total = [yi[i] - output[i] for i in range(len(yi))]
-                print(error_total)
-                # another thing
+                error = [yi[i] - output[i] for i in range(len(yi))]
+
                 # Backward propagation
-                deltas = [error_total[i] * self.sigmoid_derivative(output[i]) for i in range(len(error))]
+                deltas = [error[i] * self.sigmoid_derivative(output[i]) for i in range(len(error))]
 
                 # Adjust weights and biases for output layer
                 for i in range(len(self.weights[-1])):
@@ -81,19 +87,14 @@ class NetworkV2:
                         self.biases[l][i][0] += self.learning_rate * delta
                     deltas = new_deltas
 
-    @staticmethod
-    def generate_random_matrix(rows, cols):
-        return [[random.gauss(0, 1) for _ in range(cols)] for _ in range(rows)]
+# Ejemplo de uso:
+network = NetworkV2(n_input=2, n_hidden=2, n_output=1, n_hidden_neurons=2, learning_rate=0.5, epochs=10000)
+network.initialization()
+X = [[0, 1], [1, 0], [0, 0], [1, 1]]
+y = [[1], [1], [0], [0]]
+network.backpropagation(X, y)
 
-    def initialization(self):
-        architecture = [self.n_input]
-        for _ in range(self.n_hidden):
-            architecture.append(self.n_hidden_neurons)
-        architecture.append(self.n_output)
-        # Randomly initialize weights and biases for each layer
-        self.weights, self.biases = self.generate_random_weights_and_biases(architecture)
-
-        # Perform forward propagation for each input
-        output = self.forward_propagation([0, 1], self.weights, self.biases)
-        print(f"Input: 1 -> Output: {output}")
-
+# Evaluar la red
+for xi in X:
+    output = network.forward_propagation(xi, network.weights, network.biases)[-1]
+    print(f"Input: {xi} -> Output: {1 if output[0] > 0.5 else 0}")
