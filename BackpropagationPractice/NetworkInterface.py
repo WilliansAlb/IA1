@@ -4,6 +4,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import networkx as nx
 from Network import Network
+from tkinter import font
 
 
 class NetworkInterface:
@@ -17,9 +18,10 @@ class NetworkInterface:
             "SALIDAS": tk.IntVar(value=1),
             "ITERACIONES": tk.IntVar(value=100000),
             "FACTOR DE APRENDIZAJE": tk.DoubleVar(value=0.02),
-            "SIGMOID": tk.BooleanVar(value=False),
-            "STEP": tk.BooleanVar(value=False)
+            "SIGMOID": tk.BooleanVar(value=True),
+            "STEP": tk.BooleanVar(value=True)
         }
+        self.font = font.Font(family="FontAwesome", size=10)
         self.network = None
         self.learning = None
         self.left_frame = ttk.Frame(self.root)
@@ -34,7 +36,7 @@ class NetworkInterface:
         # Create input fields for each parameter
         row = 0
         for param, var in self.parameters.items():
-            label = ttk.Label(right_frame, text=param)
+            label = ttk.Label(right_frame, text=param, font=self.font)
             label.grid(row=row, column=0, padx=5, pady=5, sticky=tk.W)
 
             if isinstance(var, tk.BooleanVar):
@@ -48,10 +50,10 @@ class NetworkInterface:
                 entry.grid(row=row, column=1, padx=5, pady=5)
 
             row += 1
-        self.learning = tk.Label(right_frame, text="algo")
-        self.learning.grid(row=row, column=0, padx=5, pady=5)
+        self.learning = tk.Label(right_frame, text="\n\n\n\n\n")
+        self.learning.grid(row=row, columnspan=2, padx=5, pady=5)
         # Button to submit the form
-        submit_button = ttk.Button(right_frame, text="Submit", command=self.submit)
+        submit_button = ttk.Button(right_frame, text="ENTRENAR Y PROBAR", command=self.submit)
         submit_button.grid(row=row + 1, column=0, columnspan=2, pady=10)
 
     def create_graph(self, frame):
@@ -108,8 +110,20 @@ class NetworkInterface:
                                n_hidden_neurons=self.parameters["# NEURONAS OCULTAS"].get(),
                                n_output=self.parameters["SALIDAS"].get(),
                                epochs=self.parameters["ITERACIONES"].get(),
-                               learning_rate=self.parameters["FACTOR DE APRENDIZAJE"].get())
+                               learning_rate=self.parameters["FACTOR DE APRENDIZAJE"].get(),
+                               is_sigmoid=self.parameters["SIGMOID"].get(),
+                               is_step=self.parameters["STEP"].get())
         self.network.initialization()
         X = [[0, 1], [1, 0], [0, 0], [1, 1]]
         y = [[1], [1], [0], [0]]
         self.network.backpropagation(X, y, self)
+        self.create_graph(self.left_frame)
+        new_state = ""
+        for xi in X:
+            output = self.network.forward_propagation(xi, self.network.weights, self.network.biases)[-1]
+            state = f"Input: {xi} \uf35a Output: {self.network.final_activation_function(abs(output[0]))}"
+            print(state)
+            new_state += state + "\n"
+        previous_text = self.learning.cget("text").replace("\n\n\n\n\n", "")
+        new_state = previous_text + "\n" + new_state
+        self.learning.configure(text=new_state, font=self.font)

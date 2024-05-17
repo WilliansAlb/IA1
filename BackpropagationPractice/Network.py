@@ -20,6 +20,28 @@ class Network:
         return 1 / (1 + math.exp(-x))
 
     @staticmethod
+    def tanh(x):
+        e_pos = math.exp(x)
+        e_neg = math.exp(-x)
+        return (e_pos - e_neg) / (e_pos + e_neg)
+
+    def tanh_derivative(self, x):
+        tanh_x = self.tanh(x)
+        return 1 - tanh_x ** 2
+
+    def transfer_function(self, x):
+        if self.is_sigmoid:
+            return self.sigmoid(x)
+        else:
+            return self.tanh(x)
+
+    def transfer_error(self, x):
+        if self.is_sigmoid:
+            return self.sigmoid_derivative(x)
+        else:
+            return self.tanh_derivative(x)
+
+    @staticmethod
     def sigmoid_derivative(x):
         return x * (1 - x)
 
@@ -30,7 +52,7 @@ class Network:
             x_new = []
             for w_n, b_n in zip(W, b):
                 activation = self.neuron_activation_function(w_n, x_prev, b_n[0])
-                x_new.append(self.sigmoid(activation))
+                x_new.append(self.transfer_function(activation))
             activations.append(x_new)
             x_prev = x_new
         return activations
@@ -57,6 +79,7 @@ class Network:
         self.weights, self.biases = self.generate_random_weights_and_biases(architecture)
 
     def backpropagation(self, x, y, visual=None):
+        status = ""
         for epoch in range(self.epochs):
             for xi, yi in zip(x, y):
                 activations = self.forward_propagation(xi, self.weights, self.biases)
@@ -64,10 +87,10 @@ class Network:
 
                 error = [yi[i] - output[i] for i in range(len(yi))]
 
-                status = '>epoch=%d, lrate=%.3f, error=%.3f' % (epoch, self.learning_rate, error[0])
+                status = '>iteracion=%d, aprendizaje=%.3f, error=%.3f' % (epoch, self.learning_rate, abs(error[0]))
                 print(status)
-
-                deltas = [error[i] * self.sigmoid_derivative(output[i]) for i in range(len(error))]
+                status += "\n\n\n\n\n"
+                deltas = [error[i] * self.transfer_error(output[i]) for i in range(len(error))]
 
                 for i in range(len(self.weights[-1])):
                     for j in range(len(self.weights[-1][i])):
@@ -78,13 +101,26 @@ class Network:
                     new_deltas = []
                     for neuron in range(len(self.weights[layer])):
                         error = sum(self.weights[layer + 1][j][neuron] * deltas[j] for j in range(len(deltas)))
-                        delta = error * self.sigmoid_derivative(activations[layer + 1][neuron])
+                        delta = error * self.transfer_error(activations[layer + 1][neuron])
                         new_deltas.append(delta)
                         for w in range(len(self.weights[layer][neuron])):
                             self.weights[layer][neuron][w] += self.learning_rate * delta * activations[layer][w]
                         self.biases[layer][neuron][0] += self.learning_rate * delta
                     deltas = new_deltas
 
-                if visual is not None:
-                    print(visual.learning)
-                    visual.learning.config(text=status)
+            if visual is not None and epoch % 10 == 0:
+                visual.learning.config(text=status)
+                visual.root.update_idletasks()
+
+    @staticmethod
+    def step(x):
+        return 1 if x > 0.5 else 0
+
+    @staticmethod
+    def identity(x):
+        return x
+    def final_activation_function(self, x):
+        if self.is_step:
+            return self.step(x)
+        else:
+            return self.identity(x)
